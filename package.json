@@ -1,0 +1,16 @@
+{
+  "name": "nrkeyspace",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "author": "redis-developer",
+  "license": "MIT",
+  "dependencies": {
+    "nodemon": "^2.0.15",
+    "redis": "^4.0.6"
+  }
+}
