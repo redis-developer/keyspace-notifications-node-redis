@@ -1,6 +1,10 @@
 import { createClient } from 'redis';
 
-const client = createClient();
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+
+const client = createClient({
+  url: REDIS_URL
+});
 await client.connect();
 
 const subClient = client.duplicate();
