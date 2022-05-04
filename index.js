@@ -13,7 +13,6 @@ await subClient.connect();
 await subClient.pSubscribe('__keyspace@0__:tokens:*', async (message, channel) => {
   console.log(`event >>> ${message} on ${channel}`);
   const affectedKey = channel.substring('__keyspace@0__:'.length);
-  console.log(`key ${affectedKey}`);
   const howMany = await client.sCard(affectedKey);
   console.log(`Set cardinality ${affectedKey} is ${howMany}`);
 
