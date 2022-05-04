@@ -2,6 +2,8 @@
 
 TODO background on this project and what we'll do...
 
+TODO embed a GIF of 2 Terminals showing this working...
+
 https://redis.io/docs/manual/keyspace-notifications/
 
 ## Prerequisites
