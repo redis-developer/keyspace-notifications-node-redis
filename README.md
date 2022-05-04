@@ -4,9 +4,23 @@ TODO background on this project and what we'll do...
 
 https://redis.io/docs/manual/keyspace-notifications/
 
+## Prerequisites
+
+To try out this project yourself, you'll need:
+
+* [Redis](https://redis.io) (install locally or use the supplied Docker Compose file).
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) (if using the Docker Compose file).
+* [git](https://git-scm.com/download) command line tools.
+* [Node.js](https://nodejs.org/) version 14.8 or higher.
+
 ## Get the Code
 
-TODO cloning repo and pre-requisites...
+To get the code, clone the repo to your machine:
+
+```bash
+$ git clone https://github.com/redis-developer/keyspace-notifications-node-redis.git
+$ cd keyspace-notifications-node-redis
+```
 
 ## Configuring and Starting Redis
 
@@ -55,12 +69,95 @@ See the [Keyspace Notifications configuration docs](https://redis.io/docs/manual
 
 ## Application Setup
 
-TODO
+To setup the application, first install the dependencies:
+
+```bash
+$ npm install
+```
+
+The application expects to find Redis at `localhost` on port `6379` with no password.  These are the default values when installing Redis.
+
+If your Redis server is located elsewhere and/or requires a password, set the value of the `REDIS_URL` environment variable to a valid [Redis connection URL](https://github.com/redis/node-redis#usage) before starting the application.  For example:
+
+```bash
+$ export REDIS_URL=redis://simon:sssssh@redis.mydomain.com:6390
+```
 
 ## Running the Application
 
-TODO
+Start the application as follows:
+
+```bash
+$ npm run dev
+```
+
+This uses [nodemon](https://www.npmjs.com/package/nodemon) which will restart the application for you automatically every time you make a code change.
 
 ## Generating Events
+
+You won't see any output from the application until you make changes in Redis that generate the sorts of keyspace events that you enabled earlier, and which affect the portion of the keyspace that the application is listening for.  We'll look at how that works later in this document, but for now let's try changing data in Redis in ways that generate appropriate events and watch the application react to them and update our high score table...
+
+First, with the application running, connect to Redis using `redis-cli` or Redis Insight.  
+
+Let's assume that a few users playing our game have found some of the tokens, and we want to represent that by adding each token to a Redis Set whose key name has the user name in it:
+
+```bash
+$ redis-cli
+127.0.0.1:6379> sadd tokens:simon a b c
+(integer) 3
+127.0.0.1:6379> sadd tokens:suze a d e f
+(integer) 4
+127.0.0.1:6379> sadd tokens:steve a b c f g
+(integer) 5
+```
+
+Take a look at the terminal where the Node.js application is running.  You should see that each time we ran the [`SADD` command](https://redis.io/commands/sadd/), an event was generated and the application created and updated a high score table (stored as a [Redis Sorted Set](https://redis.io/docs/manual/data-types/#sorted-sets) in a key named `scoreboard`):
+
+```
+event >>> sadd on __keyspace@0__:tokens:simon
+Set cardinality tokens:simon is 3
+Scores:
+[ { value: 'simon', score: 3 } ]
+event >>> sadd on __keyspace@0__:tokens:suze
+Set cardinality tokens:suze is 4
+Scores:
+[ { value: 'suze', score: 4 }, { value: 'simon', score: 3 } ]
+event >>> sadd on __keyspace@0__:tokens:steve
+Set cardinality tokens:steve is 5
+Scores:
+[
+  { value: 'steve', score: 5 },
+  { value: 'suze', score: 4 },
+  { value: 'simon', score: 3 }
+]
+```
+
+Let's remove a token from one user, and delete another entirely:
+
+```bash
+127.0.0.1:6379> srem tokens:steve c
+(integer) 1
+127.0.0.1:6379> del tokens:simon
+(integer) 1
+```
+
+The output from the Node.js application looks like this:
+
+```
+event >>> srem on __keyspace@0__:tokens:steve
+Set cardinality tokens:steve is 4
+Scores:
+[
+  { value: 'suze', score: 4 },
+  { value: 'steve', score: 4 },
+  { value: 'simon', score: 3 }
+]
+event >>> del on __keyspace@0__:tokens:simon
+Set cardinality tokens:simon is 0
+Scores:
+[ { value: 'suze', score: 4 }, { value: 'steve', score: 4 } ]
+```
+
+## How does it Work?
 
 TODO
