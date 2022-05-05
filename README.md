@@ -2,7 +2,11 @@
 
 TODO background on this project and what we'll do...
 
-TODO embed a GIF of 2 Terminals showing this working...
+Here's what it looks like when running... in the left hand terminal I'm manipulating the contents of Redis Sets - one for each player that's collecting tokens in the game.  On the right, the Node.js application is reacting to the keyspace events that are raised, and is updating the high score table that we keep as a Redis Sorted Set.
+
+![demo](keyspace_events_demo.gif)
+
+TODO
 
 https://redis.io/docs/manual/keyspace-notifications/
 
