@@ -237,5 +237,50 @@ We receive keyspace notification events whenever the set is modified... we know 
 
 The Redis command to get the cardinality or number of members in a set is [`SCARD`](https://redis.io/commands/scard/).  We can actually use this one command to cover all three of the above scenarios, without needing to know which scenario triggered the keyspace event.  We can do this because `SCARD` returns the cardinality of the set at a given key, or 0 if the key doesn't exist.  This means we don't need a separate check for the "user left the game" scenario.
 
-TODO...
+With that said, let's see how many tokens are in the affected set:
 
+```javascript
+const howMany = await client.sCard(affectedKey);
+```
+
+`howMany` is now going to be 0 (user left the game) or > 0 (user is still in the game and just gained or lost a token).  With this information, we can now update the high score table, or create it if it doesn't alredy exist.
+
+The high score table uses a Redis [Sorted Set](https://redis.io/docs/manual/data-types/#sorted-sets), which associates a value (we'll use the username here) with a score (the number of tokens) and keeps the members sorted by score.
+
+We only need to use one of two Sorted Set commands here... if the value of `howMany` is > 0, we'll add the user to the high score table Sorted Set with [`ZADD`](https://redis.io/commands/zadd/). We're relying on a couple of useful properties of `ZADD` here:
+
+* If the Sorted Set doesn't already exist it will create it for us.
+* If the user already exists in the Sorted Set, it will update their score for us to the new value provided.
+
+So our code for adding or updating a user in the high score table looks like this:
+
+```javascript
+if (howMany > 0) {
+  await client.zAdd('scoreboard', [
+    { 
+      score: howMany, 
+      value: userName
+    }
+  ]);
+}
+```
+
+And if `howMany` was 0, we just need to use [`ZREM`](https://redis.io/commands/zrem/) to remove the username from the high score table (this doesn't result in an error if the high score table doesn't exist or the user isn't in it, so we don't need to check for those possibilities):
+
+```javascript
+} else {
+  await client.zRem('scoreboard', userName);
+}
+```
+
+Finally, let's retrieve the entire high score table and print it out in descending score order... so that the user with the most tokens comes out on top.  For this, we'll use the [`ZRANGE`](https://redis.io/commands/zrange/) command:
+
+```javascript
+console.log(await client.zRangeWithScores('scoreboard', 0, -1, {
+  REV: true
+}));
+```
+
+`ZRANGE` takes two zero-based index arguments... `0` being start at the first (lowest score) member in the Sorted Set, and `-1` meaning return members up to and including the last (highest score).  Passing in `true` as the value of the `REV` modifier tells Redis we want the results back in reverse order... so highest score down to lowest.
+
+And that's all we need!  If you're building anything with Redis, or have questions we'd love to hear from you on [our Discord server](https://discord.gg/redis).
