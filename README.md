@@ -221,4 +221,21 @@ Where `tokens:simon` is the Redis key that was affected, and `simon` is the user
   const userName = affectedKey.split(':')[1];
 ```
 
-TODO what operations will have happened: sadd/srem/del, checking set cardinality...
+Now we have the user's username and key, we want to:
+
+* See how many tokens they currently have in their tokens set.
+* Update the leaderboard, creating it if necessary.
+* Print out the current leaderboard.
+
+Let's look at each in turn...
+
+We receive keyspace notification events whenever the set is modified... we know that our application's going to perform three types of operation on a user's token set:
+
+* Add a new token (adding the first token with [`SADD`](https://redis.io/commands/sadd/) creates the set for us).
+* Remove a token (removing the last token with [`SREM`](https://redis.io/commands/srem/) also deletes the set for us).
+* Delete the whole set because they left the game (achieved with the [`DEL`](https://redis.io/commands/del/) command).
+
+The Redis command to get the cardinality or number of members in a set is [`SCARD`](https://redis.io/commands/scard/).  We can actually use this one command to cover all three of the above scenarios, without needing to know which scenario triggered the keyspace event.  We can do this because `SCARD` returns the cardinality of the set at a given key, or 0 if the key doesn't exist.  This means we don't need a separate check for the "user left the game" scenario.
+
+TODO...
+
