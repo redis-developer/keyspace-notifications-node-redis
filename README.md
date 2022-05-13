@@ -203,3 +203,22 @@ await subClient.pSubscribe('__keyspace@0__:tokens:*', async (message, channel) =
 ```
 
 We're using `subClient` as the blocked/listening connection to Redis here... so if we want to issue further Redis commands in the callback function, we'll have to do that with `client`, our other connection to Redis.
+
+We know from our keyspace notifications configuration that each event we get notified about involves some sort of change in the keyspace for keys beginning with `tokens:`.  We can assume (because we're the ones creating the application) that all keys beginning `tokens:` are Redis Sets, representing the tokens that a given user has collected in our game.  We can also assume that the key names are of the form `tokens:<username>` e.g. `tokens:simon`.
+
+With those assumptions made, we can now start working on processing the notification event.
+
+The value of `channel` will look something like this:
+
+```
+__keyspace@0__:tokens:simon
+```
+
+Where `tokens:simon` is the Redis key that was affected, and `simon` is the username of the player in our game.  Let's parse these values out of `channel`:
+
+```javascript
+  const affectedKey = channel.substring('__keyspace@0__:'.length);
+  const userName = affectedKey.split(':')[1];
+```
+
+TODO what operations will have happened: sadd/srem/del, checking set cardinality...
