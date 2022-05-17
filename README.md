@@ -1,8 +1,13 @@
 # Redis Keyspace Notifications with Node-Redis
 
-This is a small project using Node.js ([Node-Redis]() client), [Redis](https://redis.io) and Redis [Keyspace Notifications](https://redis.io/docs/manual/keyspace-notifications/).  Keyspace notifications allow clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way.  In this project, we'll use them to model a high score table in a multi-player game.
+This is a small project using Node.js ([Node-Redis](https://www.npmjs.com/package/redis) client), [Redis](https://redis.io) and Redis [Keyspace Notifications](https://redis.io/docs/manual/keyspace-notifications/).  Keyspace notifications allow clients to subscribe to [Pub/Sub](https://redis.io/docs/manual/pubsub/) channels in order to receive events affecting the Redis data set in some way.  In this project, we'll use them to model a high score table in a multi-player game.
 
-TODO project description...
+Imagine we're building a game in which players have to collect tokens, and where we measure who is winning by keeping track of how many tokens each player has.  We'll model this in Redis as follows:
+
+* We'll use a [Redis Set](https://redis.io/docs/manual/data-types/#sets) to record which tokens each player has at any given time.  The tokens are named "a", "b", "c" etc and each player has to collect all of them.  We'll store these sets in the Redis keyspace using key names of the form: `tokens:username` where `username` is the player's user name in our game.
+* We'll use a [Redis Sorted Set](https://redis.io/docs/manual/data-types/#sorted-sets) to keep track of the high scores.  We only need a single key for this, and we'll call that `scoreboard`.
+
+What we want to do is use keyspace notifications to track updates to those `tokens:username` Set keys for us.  Whenever something changes with one, we want a Node.js script that's subscribed to some Pub/Sub channels to receive a message so that it can update the scoreboard.  With this architecture, our code that handles updating the Sets doesn't need to know anything about the scoreboard's implementation, or even that we're keeping score.
 
 Here's what this project looks like when running... in the left hand terminal I'm manipulating the contents of Redis Sets - one for each player that's collecting tokens in the game.  On the right, the Node.js application is reacting to the keyspace events that are raised, and is updating the high score table that we keep as a Redis Sorted Set.
 
@@ -103,7 +108,7 @@ This uses [nodemon](https://www.npmjs.com/package/nodemon) which will restart th
 
 You won't see any output from the application until you make changes in Redis that generate the sorts of keyspace events that you enabled earlier, and which affect the portion of the keyspace that the application is listening for.  We'll look at how that works later in this document, but for now let's try changing data in Redis in ways that generate appropriate events and watch the application react to them and update our high score table...
 
-First, with the application running, connect to Redis using `redis-cli` or Redis Insight.  
+First, with the application running, connect to Redis using `redis-cli` or RedisInsight.  
 
 Let's assume that a few users playing our game have found some of the tokens, and we want to represent that by adding each token to a Redis Set whose key name has the user name in it:
 
