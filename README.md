@@ -1,14 +1,12 @@
-# Redis Keyspace Notifications with Node Redis
+# Redis Keyspace Notifications with Node-Redis
 
-TODO background on this project and what we'll do...
+This is a small project using Node.js ([Node-Redis]() client), [Redis](https://redis.io) and Redis [Keyspace Notifications](https://redis.io/docs/manual/keyspace-notifications/).  Keyspace notifications allow clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way.  In this project, we'll use them to model a high score table in a multi-player game.
 
-Here's what it looks like when running... in the left hand terminal I'm manipulating the contents of Redis Sets - one for each player that's collecting tokens in the game.  On the right, the Node.js application is reacting to the keyspace events that are raised, and is updating the high score table that we keep as a Redis Sorted Set.
+TODO project description...
+
+Here's what this project looks like when running... in the left hand terminal I'm manipulating the contents of Redis Sets - one for each player that's collecting tokens in the game.  On the right, the Node.js application is reacting to the keyspace events that are raised, and is updating the high score table that we keep as a Redis Sorted Set.
 
 ![demo](keyspace_events_demo.gif)
-
-TODO
-
-https://redis.io/docs/manual/keyspace-notifications/
 
 ## Prerequisites
 
