@@ -10,6 +10,14 @@
   "engines": {
     "node": ">=14.8"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redis-developer/keyspace-notifications-node-redis.git"
+  },
+  "bugs": {
+    "url": "https://github.com/redis-developer/keyspace-notifications-node-redis/issues"
+  },
+  "homepage": "https://github.com/redis-developer/keyspace-notifications-node-redis#readme",
   "author": "redis-developer",
   "license": "MIT",
   "dependencies": {
