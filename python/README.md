@@ -15,9 +15,9 @@ If your Redis server is located elsewhere and/or requires a password, set the va
 $ export REDIS_URL=redis://luca:sssssh@redis.mydomain.com:6390
 ```
 
-Finally, the default logging level is set to `INFO`. You can change it with the `LOGGING_LEVEL` environment variable. For example:
+Finally, the default logging level is set to `INFO`. You can change it with the `LOGLEVEL` environment variable. For example:
 ```bash
-$ export LOGGING_LEVEL=DEBUG
+$ export LOGLEVEL=DEBUG
 ```
 
 ## Running the Application

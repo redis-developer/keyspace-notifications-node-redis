@@ -50,19 +50,19 @@ def keyspace_event_handler(event):
 
 
 def main():
-    sub_client.psubscribe(**{SUB_KEY: keyspace_event_handler})
-    pubsub_worker_thread = None
+    sub_worker_thread = None
     try:
         logging.debug("Waiting for events...")
-        pubsub_worker_thread = sub_client.run_in_thread(sleep_time=.01)
-        pubsub_worker_thread.join()
+        sub_client.psubscribe(**{SUB_KEY: keyspace_event_handler})
+        sub_worker_thread = sub_client.run_in_thread(sleep_time=.01)
+        sub_worker_thread.join()
     except KeyboardInterrupt:
         pass
     finally:
         # gracefully stops the clients, for example when receives a `KeyboardInterrupt` (e.g. CTRL + c)
         logging.debug("Stopping the application...")
-        if pubsub_worker_thread:
-            pubsub_worker_thread.stop()
+        if sub_worker_thread:
+            sub_worker_thread.stop()
         client.close()
 
 
